@@ -1,0 +1,205 @@
+import requests
+import csv
+from bs4 import BeautifulSoup
+import pandas as pd
+import openpyxl
+from openpyxl import load_workbook
+from openpyxl import Workbook
+from decimal import *
+import numpy as np
+import requests
+import csv
+from bs4 import BeautifulSoup
+import pandas as pd
+import openpyxl
+from openpyxl import load_workbook
+from openpyxl import Workbook
+from decimal import *
+from matplotlib import pyplot as plt
+from scipy import integrate
+import numpy as np
+from array import *
+
+
+read_file = pd.read_excel('PTownleg.xlsx')
+df = pd.read_excel('PTownleg.xlsx')
+
+
+df["x-axis acceleration"] = pd.to_numeric(df["x-axis acceleration"], downcast="float")
+df["x-axis acceleration"] = ((df["x-axis acceleration"] * 9.81)/8192)
+
+df["y-axis acceleration"] = pd.to_numeric(df["y-axis acceleration"], downcast="float")
+df["y-axis acceleration"] = ((df["y-axis acceleration"] * 9.81)/8192)
+
+df["z-axis acceleration"] = pd.to_numeric(df["z-axis acceleration"], downcast="float")
+df["z-axis acceleration"] = ((df["z-axis acceleration"] * 9.81)/8192)
+
+
+df["x-axis gyroscope"] = pd.to_numeric(df["x-axis gyroscope"], downcast="float")
+df["x-axis gyroscope"] = (df["x-axis gyroscope"] / 16.4)
+
+df["y-axis gyroscope"] = pd.to_numeric(df["y-axis gyroscope"], downcast="float")
+df["y-axis gyroscope"] = (df["y-axis gyroscope"] / 16.4)
+
+df["z-axis gyroscope"] = pd.to_numeric(df["z-axis gyroscope"], downcast="float")
+df["z-axis gyroscope"] = (df["z-axis gyroscope"] / 16.4)
+
+df["x-axis magnetometer"] = pd.to_numeric(df["x-axis magnetometer"], downcast="float")
+df["x-axis magnetometer"] = (df["x-axis magnetometer"] * 0.6)
+
+df["y-axis magnetometer"] = pd.to_numeric(df["y-axis magnetometer"], downcast="float")
+df["y-axis magnetometer"] = (df["y-axis magnetometer"] * 0.6)
+
+df["z-axis magnetometer"] = pd.to_numeric(df["z-axis magnetometer"], downcast="float")
+df["z-axis magnetometer"] = (df["z-axis magnetometer"] * 0.6)
+
+ax = df['x-axis acceleration'].tolist()
+ay = df['y-axis acceleration'].tolist()
+az = df['z-axis acceleration'].tolist()
+
+gx = df['x-axis gyroscope'].tolist()
+gy = df['y-axis gyroscope'].tolist()
+gz = df['z-axis gyroscope'].tolist()
+
+t = df['Time (ms)'].tolist()
+
+
+startPoint = 100
+windowBefore = 99
+windowAfter = 899
+
+df = df[startPoint-windowBefore-1:startPoint+windowAfter]
+
+gx_int = integrate.cumtrapz(df['x-axis gyroscope'], dx=0.01)
+gy_int = integrate.cumtrapz(df['y-axis gyroscope'], dx=0.01)
+gz_int = integrate.cumtrapz(df['z-axis gyroscope'], dx=0.01)
+
+gx_int = gx_int.tolist()
+gy_int = gy_int.tolist()
+gz_int = gz_int.tolist()
+
+gx_int.insert(0,0)
+gy_int.insert(0,0)
+gz_int.insert(0,0)
+
+
+ax_trimmed = df['x-axis acceleration'].tolist()
+ay_trimmed = df['y-axis acceleration'].tolist()
+az_trimmed = df['z-axis acceleration'].tolist()
+
+
+gx_trimmed = df['x-axis gyroscope'].tolist()
+gy_trimmed = df['y-axis gyroscope'].tolist()
+gz_trimmed = df['z-axis gyroscope'].tolist()
+
+mx_trimmed = df['x-axis magnetometer'].tolist()
+my_trimmed = df['y-axis magnetometer'].tolist()
+mz_trimmed = df['z-axis magnetometer'].tolist()
+
+
+t_trimmed = df['Time (ms)'].tolist()
+
+ax1 = plt.gca()
+plt.title('Acceleration Data')
+plt.plot(t_trimmed,ax_trimmed,label='X-axis')
+plt.plot(t_trimmed,ay_trimmed,label='Y-axis')
+plt.plot(t_trimmed,az_trimmed,label='Z-axis')
+plt.xlabel('Time (ms)')
+plt.ylabel ('Acceleration ( m/s2)')
+plt.legend()
+plt.show()
+
+ax2 = plt.gca()
+plt.title('Gyroscope Data')
+plt.plot(t_trimmed,gx_trimmed,label='X-axis')
+plt.plot(t_trimmed,gy_trimmed,label='Y-axis')
+plt.plot(t_trimmed,gz_trimmed,label='Z-axis')
+plt.xlabel('Time (ms)')
+plt.ylabel ('Gyroscope °/s')
+plt.legend()
+plt.show()
+
+ax3 = plt.gca()
+plt.title('Magnetometer Data')
+plt.plot(t_trimmed,mx_trimmed,label='X-axis')
+plt.plot(t_trimmed,my_trimmed,label='Y-axis')
+plt.plot(t_trimmed,mz_trimmed,label='Z-axis')
+plt.xlabel('Time (ms)')
+plt.ylabel ('Tesla T')
+plt.legend()
+plt.show()
+
+read_file1 = pd.read_excel('TD_toenter.xlsx')
+df1 = pd.read_excel('TD_toenter.xlsx')
+
+DatabasePoint = 44
+
+t1 = [a * b for a, b in zip(gx_int, gx_int)]
+t2 = [a * b for a, b in zip(gy_int, gy_int)]
+t3 = [a * b for a, b in zip(gz_int, gz_int)]
+
+total = []
+
+for i in range(0, len(t1)):
+    total.append(t1[i] + t2[i]+ t3[i])
+
+total = np.array(total)
+total_angle_vector = np.sqrt(total)
+total_angle_vector = total_angle_vector
+ID9_meas_total = (total_angle_vector * -1)+140
+
+
+ID9_meas_total=pd.DataFrame(ID9_meas_total)
+
+df2 = pd.read_excel('PTownleg.xlsx')
+
+df2['ID9_meas_total']= ID9_meas_total
+df2 = df2[43:]
+
+ID9_meas_trimmed_total=df2['ID9_meas_total'].tolist()
+
+t_trimmed_trimmed= np.arange(0,9560,10)
+
+t_trimmed_trimmed=t_trimmed_trimmed.tolist()
+
+a7 = plt.gca()
+plt.title('CP Gyroscope Measurement')
+plt.plot(t_trimmed, total_angle_vector, label='Angular Displacement')
+plt.xlabel('Time (ms)')
+plt.ylabel('Angle °')
+plt.legend()
+plt.show()
+
+
+a6 = plt.gca()
+plt.title('Pendulum test 3-axis Angular Displacement and Vector Sum on own leg')
+
+plt.plot(t_trimmed, gx_int, label='x-axis')
+plt.plot(t_trimmed, gy_int, label='y-axis')
+plt.plot(t_trimmed, gz_int, label='z-axis')
+plt.plot(t_trimmed,total_angle_vector,label='Vector')
+plt.xlabel('Time (ms)')
+plt.ylabel('Angle °')
+plt.legend()
+plt.show()
+
+ID9_meas_trimmed_total = [ID9_meas_trimmed_total for ID9_meas_trimmed_total in ID9_meas_trimmed_total if str(ID9_meas_trimmed_total) != 'nan']
+
+a5 = plt.gca()
+plt.title('Pendulum Test Knee Angle on own leg')
+df1.plot(kind='line', x='ID9_entered_time', y='ID9_entered_angle', ax=a5, color='blue')
+plt.plot(t_trimmed_trimmed, ID9_meas_trimmed_total, label='Measured Angle on own leg')
+plt.xlabel('Time(ms)')
+plt.ylabel('Angle')
+plt.legend()
+plt.show()
+
+
+from sklearn.metrics import mean_squared_error
+from math import sqrt
+
+R=np.corrcoef(ID9_entered_angle_642element_final, ID9_meas_trimmed_total)
+
+
+
+RMSE = sqrt(mean_squared_error(ID9_meas_trimmed_total, ID9_meas_trimmed_total))
