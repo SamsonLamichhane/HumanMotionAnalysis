@@ -1,0 +1,387 @@
+import requests
+import csv
+from bs4 import BeautifulSoup
+import pandas as pd
+import openpyxl
+from openpyxl import load_workbook
+from openpyxl import Workbook
+from decimal import *
+import numpy as np
+import requests
+import csv
+from bs4 import BeautifulSoup
+import pandas as pd
+import openpyxl
+from openpyxl import load_workbook
+from openpyxl import Workbook
+from decimal import *
+from matplotlib import pyplot as plt
+from scipy import integrate
+import numpy as np
+from array import *
+
+
+
+read_file = pd.read_excel('osc800.xlsx')
+df = pd.read_excel('osc800.xlsx')
+
+
+df["x-axis acceleration"] = pd.to_numeric(df["x-axis acceleration"], downcast="float")
+df["x-axis acceleration"] = ((df["x-axis acceleration"] * 9.81)/8192)
+
+df["y-axis acceleration"] = pd.to_numeric(df["y-axis acceleration"], downcast="float")
+df["y-axis acceleration"] = ((df["y-axis acceleration"] * 9.81)/8192)
+
+df["z-axis acceleration"] = pd.to_numeric(df["z-axis acceleration"], downcast="float")
+df["z-axis acceleration"] = ((df["z-axis acceleration"] * 9.81)/8192)
+
+xGyroOffset = -0.088976965
+yGyroOffset = -0.753604336
+zGyroOffset = -1.248733062
+
+
+
+df["x-axis gyroscope"] = pd.to_numeric(df["x-axis gyroscope"], downcast="float")
+df["x-axis gyroscope"] = (df["x-axis gyroscope"] / 16.4) - xGyroOffset
+
+df["y-axis gyroscope"] = pd.to_numeric(df["y-axis gyroscope"], downcast="float")
+df["y-axis gyroscope"] = (df["y-axis gyroscope"] / 16.4) - yGyroOffset
+
+df["z-axis gyroscope"] = pd.to_numeric(df["z-axis gyroscope"], downcast="float")
+df["z-axis gyroscope"] = (df["z-axis gyroscope"] / 16.4) - zGyroOffset
+
+df["x-axis magnetometer"] = pd.to_numeric(df["x-axis magnetometer"], downcast="float")
+df["x-axis magnetometer"] = (df["x-axis magnetometer"] * 0.6)
+
+df["y-axis magnetometer"] = pd.to_numeric(df["y-axis magnetometer"], downcast="float")
+df["y-axis magnetometer"] = (df["y-axis magnetometer"] * 0.6)
+
+df["z-axis magnetometer"] = pd.to_numeric(df["z-axis magnetometer"], downcast="float")
+df["z-axis magnetometer"] = (df["z-axis magnetometer"] * 0.6)
+
+ax = df['x-axis acceleration'].tolist()
+ay = df['y-axis acceleration'].tolist()
+az = df['z-axis acceleration'].tolist()
+
+gx = df['x-axis gyroscope'].tolist()
+gy = df['y-axis gyroscope'].tolist()
+gz = df['z-axis gyroscope'].tolist()
+
+t = df['Time (ms)'].tolist()
+
+startPoint = 221
+windowBefore = 100
+windowAfter = 740
+startPoint_c = 190
+
+df = df[startPoint-windowBefore-1:startPoint+windowAfter]
+
+gx_int = integrate.cumtrapz(df['x-axis gyroscope'], dx=0.01)
+gy_int = integrate.cumtrapz(df['y-axis gyroscope'], dx=0.01)
+gz_int = integrate.cumtrapz(df['z-axis gyroscope'], dx=0.01)
+
+gy_int1 = gy_int
+
+gx_int = gx_int.tolist()
+gy_int = gy_int.tolist()
+gz_int = gz_int.tolist()
+gx_int.insert(0,0)
+gy_int.insert(0,0)
+gz_int.insert(0,0)
+
+
+ax_trimmed = df['x-axis acceleration'].tolist()
+ay_trimmed = df['y-axis acceleration'].tolist()
+az_trimmed = df['z-axis acceleration'].tolist()
+gx_trimmed = df['x-axis gyroscope'].tolist()
+gy_trimmed = df['y-axis gyroscope'].tolist()
+gz_trimmed = df['z-axis gyroscope'].tolist()
+mx_trimmed = df['x-axis magnetometer'].tolist()
+my_trimmed = df['y-axis magnetometer'].tolist()
+mz_trimmed = df['z-axis magnetometer'].tolist()
+t_trimmed = df['Time (ms)'].tolist()
+
+
+######################################################
+
+read_file1 = pd.read_excel('osc800_c.xlsx')
+df1 = pd.read_excel('osc800_c.xlsx')
+
+
+df1["x-axis acceleration"] = pd.to_numeric(df1["x-axis acceleration"], downcast="float")
+df1["x-axis acceleration"] = ((df1["x-axis acceleration"] * 9.81)/8192)
+
+df1["y-axis acceleration"] = pd.to_numeric(df1["y-axis acceleration"], downcast="float")
+df1["y-axis acceleration"] = ((df1["y-axis acceleration"] * 9.81)/8192)
+
+df1["z-axis acceleration"] = pd.to_numeric(df1["z-axis acceleration"], downcast="float")
+df1["z-axis acceleration"] = ((df1["z-axis acceleration"] * 9.81)/8192)
+
+
+df1["x-axis gyroscope"] = pd.to_numeric(df1["x-axis gyroscope"], downcast="float")
+df1["x-axis gyroscope"] = (df1["x-axis gyroscope"] / 16.4)
+
+df1["y-axis gyroscope"] = pd.to_numeric(df1["y-axis gyroscope"], downcast="float")
+df1["y-axis gyroscope"] = (df1["y-axis gyroscope"] / 16.4)
+
+df1["z-axis gyroscope"] = pd.to_numeric(df1["z-axis gyroscope"], downcast="float")
+df1["z-axis gyroscope"] = (df1["z-axis gyroscope"] / 16.4)
+
+df1["x-axis magnetometer"] = pd.to_numeric(df1["x-axis magnetometer"], downcast="float")
+df1["x-axis magnetometer"] = (df1["x-axis magnetometer"] * 0.6)
+
+df1["y-axis magnetometer"] = pd.to_numeric(df1["y-axis magnetometer"], downcast="float")
+df1["y-axis magnetometer"] = (df1["y-axis magnetometer"] * 0.6)
+
+df1["z-axis magnetometer"] = pd.to_numeric(df1["z-axis magnetometer"], downcast="float")
+df1["z-axis magnetometer"] = (df1["z-axis magnetometer"] * 0.6)
+
+ax_c = df1['x-axis acceleration'].tolist()
+ay_c = df1['y-axis acceleration'].tolist()
+az_c = df1['z-axis acceleration'].tolist()
+
+gx_c = df1['x-axis gyroscope'].tolist()
+gy_c = df1['y-axis gyroscope'].tolist()
+gz_c = df1['z-axis gyroscope'].tolist()
+
+t_c = df1['Time (ms)'].tolist()
+
+
+df1 = df1[startPoint_c-windowBefore-1:startPoint_c+windowAfter]
+
+gx_int_c = integrate.cumtrapz(df1['x-axis gyroscope'], dx=0.01)
+gy_int_c = integrate.cumtrapz(df1['y-axis gyroscope'], dx=0.01)
+gz_int_c = integrate.cumtrapz(df1['z-axis gyroscope'], dx=0.01)
+gy_int_c1 = gy_int_c
+
+gx_int_c = gx_int_c.tolist()
+gy_int_c = gy_int_c.tolist()
+gz_int_c = gz_int_c.tolist()
+gx_int_c.insert(0,0)
+gy_int_c.insert(0,0)
+gz_int_c.insert(0,0)
+
+
+ax_trimmed_c = df1['x-axis acceleration'].tolist()
+ay_trimmed_c = df1['y-axis acceleration'].tolist()
+az_trimmed_c = df1['z-axis acceleration'].tolist()
+gx_trimmed_c = df1['x-axis gyroscope'].tolist()
+gy_trimmed_c = df1['y-axis gyroscope'].tolist()
+gz_trimmed_c = df1['z-axis gyroscope'].tolist()
+mx_trimmed_c = df1['x-axis magnetometer'].tolist()
+my_trimmed_c = df1['y-axis magnetometer'].tolist()
+mz_trimmed_c = df1['z-axis magnetometer'].tolist()
+t_trimmed_c = df1['Time (ms)'].tolist()
+
+ax1 = plt.gca()
+plt.title('Acceleration Data')
+plt.plot(t_trimmed,ax_trimmed,label='X-axis')
+plt.plot(t_trimmed,ay_trimmed,label='Y-axis')
+plt.plot(t_trimmed,az_trimmed,label='Z-axis')
+plt.xlabel('Time (ms)')
+plt.ylabel('Acceleration m/s^2')
+plt.legend()
+plt.show()
+
+ax2 = plt.gca()
+plt.title('Gyroscope Data')
+plt.plot(t_trimmed,gx_trimmed,label='X-axis')
+plt.plot(t_trimmed,gy_trimmed,label='Y-axis')
+plt.plot(t_trimmed,gz_trimmed,label='Z-axis')
+plt.xlabel('Time (ms)')
+plt.ylabel('Gyroscope ')
+plt.legend()
+plt.show()
+
+ax3 = plt.gca()
+plt.title('Magnetometer Data')
+plt.plot(t_trimmed,mx_trimmed,label='X-axis')
+plt.plot(t_trimmed,my_trimmed,label='Y-axis')
+plt.plot(t_trimmed,mz_trimmed,label='Z-axis')
+plt.xlabel('Time (ms)')
+plt.ylabel('Magnetic Field Strength T ')
+plt.legend()
+plt.show()
+
+read_file2 = pd.read_excel('osc800_toenter.xlsx')
+df2 = pd.read_excel('osc800_toenter.xlsx')
+
+DatabasePoint = 105
+DatabasePoint_c = 104
+
+t1 = [a * b for a, b in zip(gx_int, gx_int)]
+t2 = [a * b for a, b in zip(gy_int, gy_int)]
+t3 = [a * b for a, b in zip(gz_int, gz_int)]
+
+total = []
+
+for i in range(0, len(t1)):
+    total.append(t1[i] + t2[i]+ t3[i])
+
+total = np.array(total)
+total_angle_vector = np.sqrt(total)
+total_angle_vector = total_angle_vector
+ID9_meas_total = (total_angle_vector * -1)+140
+
+ID9_meas_total = pd.DataFrame(ID9_meas_total)
+
+df3 = pd.read_excel('osc200.xlsx')
+df4 = pd.read_excel('osc200.xlsx')
+
+df3['ID9_meas_total'] = ID9_meas_total
+df3 = df3[104:]
+
+ID9_meas_trimmed_total = df3['ID9_meas_total'].tolist()
+
+ID9_meas_trimmed_total= [ID9_meas_trimmed_total for ID9_meas_trimmed_total in ID9_meas_trimmed_total if str(ID9_meas_trimmed_total)!='nan']
+
+ID9_meas = (gy_int1 * -1)+140
+ID9_meas=pd.DataFrame(ID9_meas)
+df3['ID9_meas'] = ID9_meas
+ID9_meas_trimmed = df3['ID9_meas'].tolist()
+ID9_meas_trimmed = [ID9_meas_trimmed for ID9_meas_trimmed in ID9_meas_trimmed if str(ID9_meas_trimmed)!='nan']
+
+t1_c= [a * b for a, b in zip(gx_int_c, gx_int_c)]
+t2_c = [a * b for a, b in zip(gy_int_c, gy_int_c)]
+t3_c = [a * b for a, b in zip(gz_int_c, gz_int_c)]
+
+total_c = []
+
+for i in range(0, len(t1_c)):
+    total_c.append(t1_c[i] + t2_c[i]+ t3_c[i])
+
+total_c = np.array(total_c)
+total_angle_vector_c = np.sqrt(total_c)
+total_angle_vector_c = total_angle_vector_c
+ID9_meas_total_c = (total_angle_vector_c * -1)+140
+
+ID9_meas_total_c = pd.DataFrame(ID9_meas_total_c)
+df4 = df3[103:]
+df3['ID9_meas_total_c'] = ID9_meas_total_c
+
+
+ID9_meas_trimmed_total_c = df3['ID9_meas_total_c'].tolist()
+ID9_meas_trimmed_total_c = [ID9_meas_trimmed_total_c for ID9_meas_trimmed_total_c in ID9_meas_trimmed_total_c if str(ID9_meas_trimmed_total_c)!='nan']
+
+
+
+ID9_meas_c = (gy_int_c1 * -1)+140
+ID9_meas_c = pd.DataFrame(ID9_meas_c)
+df3['ID9_meas_c'] = ID9_meas_c
+ID9_meas_trimmed_c = df3['ID9_meas_c'].tolist()
+ID9_meas_trimmed_c = [ID9_meas_trimmed_c for ID9_meas_trimmed_c in ID9_meas_trimmed_c if str(ID9_meas_trimmed_c)!='nan']
+
+t_trimmed_trimmed = np.arange(0,7370,10)
+t_trimmed_trimmed = t_trimmed_trimmed.tolist()
+
+t_trimmed_trimmed_c = np.arange(0,7360,10)
+t_trimmed_trimmed_c = t_trimmed_trimmed_c.tolist()
+
+a7 = plt.gca()
+plt.title('CP Gyroscope Measurement')
+plt.plot(t_trimmed, total_angle_vector, label='Angular velocity')
+plt.xlabel('Time (ms)')
+plt.ylabel('Angle °')
+plt.legend()
+plt.show()
+
+
+a8 = plt.gca()
+plt.title('CP Gyroscope Measurement')
+plt.plot(t_trimmed, total_angle_vector_c, label='Angular Velocity')
+plt.plot(t_trimmed, gy_int_c, label='Angular Displacement')
+plt.xlabel('Time (ms)')
+plt.ylabel('Angle °')
+plt.legend()
+plt.show()
+
+
+a6 = plt.gca()
+plt.title('800ms oscillation 3-axis Angular Displacement and Vector Sum, without Case')
+
+plt.plot(t_trimmed, gx_int, label='x-axis')
+plt.plot(t_trimmed, gy_int, label='y-axis')
+plt.plot(t_trimmed, gz_int, label='z-axis')
+plt.plot(t_trimmed,total_angle_vector,label='Vector')
+plt.xlabel('Time (ms)')
+plt.ylabel('Angle °')
+plt.legend()
+plt.show()
+
+
+
+a5 = plt.gca()
+plt.title('800m oscillation ID9 Angle, without Case')
+df2.plot(kind='line', x='ID9_entered_time', y='ID9_entered_angle', ax=a5, color='green')
+plt.plot(t_trimmed_trimmed, ID9_meas_trimmed_total, label='Measured Angle')
+plt.xlabel('Time(ms)')
+plt.ylabel('Angle')
+plt.legend()
+plt.show()
+
+print(len(ID9_meas_trimmed))
+print(len(ID9_meas_trimmed_total))
+print(len(t_trimmed_trimmed))
+print(len(ID9_meas_trimmed_total_c))
+print(len(t_trimmed_trimmed_c))
+print(len(ID9_meas_trimmed_c))
+
+
+a51 = plt.gca()
+plt.title('800m oscillation ID9 all Angle')
+df2.plot(kind='line', x='ID9_entered_time', y='ID9_entered_angle', ax=a51, color='green')
+plt.plot(t_trimmed_trimmed, ID9_meas_trimmed_total, label='Measured Vectorized Angle(without case)')
+plt.plot(t_trimmed_trimmed_c, ID9_meas_trimmed, label='Measured y-axis angle (without case)')
+plt.plot(t_trimmed_trimmed, ID9_meas_trimmed_total_c, label='Measured Vectorized Angle(with case)')
+plt.plot(t_trimmed_trimmed_c, ID9_meas_trimmed_c, label='Measured y-axis angle (without case)')
+plt.xlabel('Time(ms)')
+plt.ylabel('Angle')
+plt.legend()
+plt.show()
+
+
+a500 = plt.gca()
+plt.title('800m oscillation ID9 Vectorized Angle')
+df2.plot(kind='line', x='ID9_entered_time', y='ID9_entered_angle', ax=a500, color='green')
+plt.plot(t_trimmed_trimmed, ID9_meas_trimmed_total, label='Measured Vectorized Angle(without case)')
+plt.plot(t_trimmed_trimmed, ID9_meas_trimmed_total_c, label='Measured Vectorized Angle(with case)')
+plt.xlabel('Time(ms)')
+plt.ylabel('Angle')
+plt.legend()
+plt.show()
+
+a501 = plt.gca()
+plt.title('800m oscillation ID9 Y-axis Angle')
+df2.plot(kind='line', x='ID9_entered_time', y='ID9_entered_angle', ax=a501, color='green')
+plt.plot(t_trimmed_trimmed_c, ID9_meas_trimmed, label='Measured Y Angle(without case)')
+plt.plot(t_trimmed_trimmed_c, ID9_meas_trimmed_c, label='Measured Y Angle(with case)')
+plt.xlabel('Time(ms)')
+plt.ylabel('Angle')
+plt.legend()
+plt.show()
+
+a5000 = plt.gca()
+plt.title('Choosing the start point in the graph')
+plt.plot(t,ax,label='x-axis acceleration')
+plt.plot(t,ay,label='y-axis acceleration')
+plt.plot(t,az,label='z-axis acceleration')
+plt.plot(t,gx,label='x-axis gyroscope')
+plt.plot(t,gy,label='y-axis gyroscope')
+plt.plot(t,gz,label='z-axis gyroscope')
+plt.xlabel('Time(ms)')
+plt.ylabel('Various')
+plt.legend()
+plt.show()
+
+a500q = plt.gca()
+plt.title('Choosing the start point in the graph')
+plt.plot(t_c,ax_c,label='x-axis acceleration')
+plt.plot(t_c,ay_c,label='y-axis acceleration')
+plt.plot(t_c,az_c,label='z-axis acceleration')
+plt.plot(t_c,gx_c,label='x-axis gyroscope')
+plt.plot(t_c,gy_c,label='y-axis gyroscope')
+plt.plot(t_c,gz_c,label='z-axis gyroscope')
+plt.xlabel('Time(ms)')
+plt.ylabel('Various')
+plt.legend()
+plt.show()
